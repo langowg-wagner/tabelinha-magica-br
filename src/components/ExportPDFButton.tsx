@@ -8,13 +8,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 
 // Size options in mm (width of the label) with pixelRatio for quality
+// Higher pixelRatio = sharper text, especially important for small sizes
 const SIZE_OPTIONS = {
-  'pequeno': { label: 'Pequeno (30mm)', width: 30, pixelRatio: 8 },
-  'medio': { label: 'Médio (50mm)', width: 50, pixelRatio: 6 },
-  'grande': { label: 'Grande (80mm)', width: 80, pixelRatio: 4 },
-  'muito-grande': { label: 'Muito Grande (120mm)', width: 120, pixelRatio: 3 },
-  'pagina-inteira': { label: 'Página Inteira', width: 170, pixelRatio: 2 },
+  'pequeno': { label: 'Pequeno (30mm)', width: 30, pixelRatio: 12 },
+  'medio': { label: 'Médio (50mm)', width: 50, pixelRatio: 10 },
+  'grande': { label: 'Grande (80mm)', width: 80, pixelRatio: 8 },
+  'muito-grande': { label: 'Muito Grande (120mm)', width: 120, pixelRatio: 6 },
+  'pagina-inteira': { label: 'Página Inteira', width: 170, pixelRatio: 4 },
 } as const;
+
+// High-quality image capture options
+const getHighQualityOptions = (pixelRatio: number) => ({
+  backgroundColor: '#ffffff',
+  pixelRatio,
+  cacheBust: true,
+  skipFonts: false, // Include fonts for better text rendering
+  quality: 1,
+  style: {
+    // Ensure crisp text rendering
+    fontSmooth: 'always',
+    WebkitFontSmoothing: 'antialiased',
+    MozOsxFontSmoothing: 'grayscale',
+    textRendering: 'optimizeLegibility',
+  },
+  filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
+});
 
 type SizeOption = keyof typeof SIZE_OPTIONS;
 
@@ -44,14 +62,8 @@ export function ExportPDFButton({ tableRef, productName, labelSize }: ExportPDFB
       // Get the pixelRatio based on size (higher for smaller sizes = sharper text)
       const pixelRatio = SIZE_OPTIONS[labelSize].pixelRatio;
       
-      // Capture the label as PNG image with high resolution
-      const dataUrl = await toPng(tableRef.current, {
-        backgroundColor: '#ffffff',
-        pixelRatio: pixelRatio,
-        cacheBust: true,
-        skipFonts: true,
-        filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
-      });
+      // Capture the label as PNG image with maximum resolution
+      const dataUrl = await toPng(tableRef.current, getHighQualityOptions(pixelRatio));
 
       // Get image dimensions
       const img = new Image();
@@ -165,14 +177,8 @@ export function PrintButton({ tableRef, labelSize }: PrintButtonProps) {
       // Get the pixelRatio based on size (higher for smaller sizes = sharper text)
       const pixelRatio = SIZE_OPTIONS[labelSize].pixelRatio;
       
-      // Capture the label as PNG image with high resolution
-      const dataUrl = await toPng(tableRef.current, {
-        backgroundColor: '#ffffff',
-        pixelRatio: pixelRatio,
-        cacheBust: true,
-        skipFonts: true,
-        filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
-      });
+      // Capture the label as PNG image with maximum resolution
+      const dataUrl = await toPng(tableRef.current, getHighQualityOptions(pixelRatio));
 
       // Get the target width in mm based on size option
       const targetWidthMM = SIZE_OPTIONS[labelSize].width;
