@@ -6,7 +6,7 @@ import { NutritionTableHorizontal } from '@/components/NutritionTableHorizontal'
 import { NutritionTableLinear } from '@/components/NutritionTableLinear';
 import { ExportButtons } from '@/components/ExportButtons';
 import { ExportPDFButton, PrintButton, LabelSizeSelector, SizeOption } from '@/components/ExportPDFButton';
-import { FrontWarningsDisplay } from '@/components/FrontWarnings';
+import { FrontWarningsDisplay, FrontWarningsCompact } from '@/components/FrontWarnings';
 import { AllergenForm } from '@/components/AllergenForm';
 import { AllergenDisplay, AllergenDisplayCompact } from '@/components/AllergenDisplay';
 import { InfoSection } from '@/components/InfoSection';
@@ -101,6 +101,9 @@ const Index = () => {
                 {tableFormat === 'linear' && (
                   <NutritionTableLinear data={nutritionData} />
                 )}
+
+                {/* Front warnings in export area */}
+                <FrontWarningsCompact warnings={frontWarnings} />
 
                 {/* Allergen declarations in export area */}
                 <AllergenDisplayCompact data={nutritionData} />

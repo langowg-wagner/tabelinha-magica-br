@@ -70,7 +70,7 @@ function NutrientLabel({ text }: { text: string }) {
 }
 
 // Complete warning badge with magnifying glass + nutrient labels
-function WarningBadge({ labels }: { labels: string[] }) {
+export function WarningBadge({ labels }: { labels: string[] }) {
   if (labels.length === 0) return null;
   
   return (
@@ -79,6 +79,23 @@ function WarningBadge({ labels }: { labels: string[] }) {
       {labels.map((label, index) => (
         <NutrientLabel key={index} text={label} />
       ))}
+    </div>
+  );
+}
+
+// Compact version for embedding in export area
+export function FrontWarningsCompact({ warnings }: { warnings: FrontWarningsType }) {
+  const activeWarnings: string[] = [];
+  
+  if (warnings.highAddedSugar) activeWarnings.push('Açúcar Adicionado');
+  if (warnings.highSaturatedFat) activeWarnings.push('Gordura Saturada');
+  if (warnings.highSodium) activeWarnings.push('Sódio');
+  
+  if (activeWarnings.length === 0) return null;
+  
+  return (
+    <div className="pt-2">
+      <WarningBadge labels={activeWarnings} />
     </div>
   );
 }
