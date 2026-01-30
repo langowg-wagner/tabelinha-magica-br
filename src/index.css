@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
+
+    --primary: 0 0% 12%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 12%;
+
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 142 72% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 85%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 12%;
+
+    --radius: 0.5rem;
+
+    /* Custom tokens */
+    --table-border: 0 0% 0%;
+    --table-header-bg: 0 0% 100%;
+    --table-row-alt: 0 0% 98%;
+    --success: 142 72% 42%;
+  }
+
+  .dark {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 12%;
+
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 142 72% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 0 0% 85%;
+
+    --table-border: 0 0% 100%;
+    --table-header-bg: 0 0% 12%;
+    --table-row-alt: 0 0% 15%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .nutrition-table {
+    @apply border-2 border-table-border bg-card;
+  }
+
+  .nutrition-table-header {
+    @apply text-center font-bold text-lg py-2 border-b-2 border-table-border uppercase tracking-wide;
+  }
+
+  .nutrition-table-row {
+    @apply border-b border-table-border;
+  }
+
+  .nutrition-table-row:last-child {
+    @apply border-b-0;
+  }
+
+  .nutrition-table-cell {
+    @apply px-3 py-1.5 text-sm;
+  }
+
+  .nutrition-table-cell-header {
+    @apply font-medium text-left whitespace-nowrap;
+  }
+
+  .nutrition-table-cell-value {
+    @apply text-center border-l border-table-border;
+  }
+
+  .nutrition-indent {
+    @apply pl-6;
+  }
+
+  .form-section {
+    @apply bg-card rounded-lg border border-border p-6 shadow-sm;
+  }
+
+  .form-section-title {
+    @apply text-lg font-semibold mb-4 pb-2 border-b border-border;
+  }
+
+  .input-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+  }
+}
+
+/* Print styles for table export */
+@media print {
+  body {
+    background: white !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .nutrition-table {
+    border-color: black !important;
+  }
+}
