@@ -16,19 +16,24 @@ interface ExportButtonsProps {
 export function ExportButtons({ tableRef }: ExportButtonsProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [scale, setScale] = useState(1); // 1x, 2x, 3x, 4x multiplier
+  const [scale, setScale] = useState(2); // Default to 2x for better quality
   const [format, setFormat] = useState<ExportFormat>('png');
 
-
+  // High-quality export options for maximum text sharpness
   const getExportOptions = (pixelRatio: number) => ({
     backgroundColor: '#ffffff',
-    pixelRatio,
+    pixelRatio: pixelRatio * 2, // Double the effective resolution
     cacheBust: true,
-    skipFonts: true,
-    filter: (node: HTMLElement) => {
-      // Skip problematic elements
-      return !node.classList?.contains('no-export');
+    skipFonts: false, // Include fonts for better text rendering
+    quality: 1,
+    style: {
+      // Ensure crisp text rendering
+      fontSmooth: 'always',
+      WebkitFontSmoothing: 'antialiased',
+      MozOsxFontSmoothing: 'grayscale',
+      textRendering: 'optimizeLegibility',
     },
+    filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
   });
 
   const generateImage = async (): Promise<string | null> => {
@@ -192,17 +197,19 @@ export function ExportButtons({ tableRef }: ExportButtonsProps) {
           <Slider
             id="scale-slider"
             min={1}
-            max={4}
+            max={6}
             step={1}
             value={[scale]}
             onValueChange={(value) => setScale(value[0])}
             className="w-full"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>1x (pequeno)</span>
+            <span>1x</span>
             <span>2x</span>
             <span>3x</span>
-            <span>4x (grande)</span>
+            <span>4x</span>
+            <span>5x</span>
+            <span>6x (máximo)</span>
           </div>
         </div>
       </div>
