@@ -5,6 +5,7 @@ import { NutritionTable } from '@/components/NutritionTable';
 import { NutritionTableHorizontal } from '@/components/NutritionTableHorizontal';
 import { NutritionTableLinear } from '@/components/NutritionTableLinear';
 import { ExportButtons } from '@/components/ExportButtons';
+import { ExportPDFButton } from '@/components/ExportPDFButton';
 import { FrontWarningsDisplay } from '@/components/FrontWarnings';
 import { AllergenForm } from '@/components/AllergenForm';
 import { AllergenDisplay, AllergenDisplayCompact } from '@/components/AllergenDisplay';
@@ -117,8 +118,11 @@ const Index = () => {
               <AllergenDisplay data={nutritionData} />
             </Card>
 
-            <div className="no-print">
+            <div className="no-print space-y-4">
               <ExportButtons tableRef={tableRef} />
+              <div className="flex gap-3">
+                <ExportPDFButton data={nutritionData} />
+              </div>
             </div>
           </div>
         </div>
