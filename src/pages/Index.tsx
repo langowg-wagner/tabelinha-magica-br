@@ -3,6 +3,7 @@ import { Header } from '@/components/Header';
 import { NutritionForm } from '@/components/NutritionForm';
 import { NutritionTable } from '@/components/NutritionTable';
 import { NutritionTableHorizontal } from '@/components/NutritionTableHorizontal';
+import { NutritionTableLinear } from '@/components/NutritionTableLinear';
 import { ExportButtons } from '@/components/ExportButtons';
 import { FrontWarningsDisplay } from '@/components/FrontWarnings';
 import { InfoSection } from '@/components/InfoSection';
@@ -82,10 +83,14 @@ const Index = () => {
               )}
               
               <div ref={tableRef} className="inline-block bg-white p-4">
-                {tableFormat === 'vertical' ? (
+                {tableFormat === 'vertical' && (
                   <NutritionTable data={nutritionData} />
-                ) : (
+                )}
+                {tableFormat === 'horizontal' && (
                   <NutritionTableHorizontal data={nutritionData} />
+                )}
+                {tableFormat === 'linear' && (
+                  <NutritionTableLinear data={nutritionData} />
                 )}
               </div>
             </Card>
