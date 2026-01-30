@@ -7,13 +7,13 @@ import { toPng } from 'html-to-image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 
-// Size options in mm (width of the label)
+// Size options in mm (width of the label) with pixelRatio for quality
 const SIZE_OPTIONS = {
-  'pequeno': { label: 'Pequeno (30mm)', width: 30 },
-  'medio': { label: 'Médio (50mm)', width: 50 },
-  'grande': { label: 'Grande (80mm)', width: 80 },
-  'muito-grande': { label: 'Muito Grande (120mm)', width: 120 },
-  'pagina-inteira': { label: 'Página Inteira', width: 170 },
+  'pequeno': { label: 'Pequeno (30mm)', width: 30, pixelRatio: 8 },
+  'medio': { label: 'Médio (50mm)', width: 50, pixelRatio: 6 },
+  'grande': { label: 'Grande (80mm)', width: 80, pixelRatio: 4 },
+  'muito-grande': { label: 'Muito Grande (120mm)', width: 120, pixelRatio: 3 },
+  'pagina-inteira': { label: 'Página Inteira', width: 170, pixelRatio: 2 },
 } as const;
 
 type SizeOption = keyof typeof SIZE_OPTIONS;
@@ -41,10 +41,13 @@ export function ExportPDFButton({ tableRef, productName, labelSize }: ExportPDFB
     setIsLoading(true);
     
     try {
-      // Capture the label as PNG image (same as the PNG export)
+      // Get the pixelRatio based on size (higher for smaller sizes = sharper text)
+      const pixelRatio = SIZE_OPTIONS[labelSize].pixelRatio;
+      
+      // Capture the label as PNG image with high resolution
       const dataUrl = await toPng(tableRef.current, {
         backgroundColor: '#ffffff',
-        pixelRatio: 3, // Higher quality for small prints
+        pixelRatio: pixelRatio,
         cacheBust: true,
         skipFonts: true,
         filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
@@ -159,10 +162,13 @@ export function PrintButton({ tableRef, labelSize }: PrintButtonProps) {
     setIsLoading(true);
 
     try {
-      // Capture the label as PNG image
+      // Get the pixelRatio based on size (higher for smaller sizes = sharper text)
+      const pixelRatio = SIZE_OPTIONS[labelSize].pixelRatio;
+      
+      // Capture the label as PNG image with high resolution
       const dataUrl = await toPng(tableRef.current, {
         backgroundColor: '#ffffff',
-        pixelRatio: 3,
+        pixelRatio: pixelRatio,
         cacheBust: true,
         skipFonts: true,
         filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
