@@ -102,11 +102,11 @@ const Index = () => {
                   <NutritionTableLinear data={nutritionData} />
                 )}
 
-                {/* Front warnings in export area */}
-                <FrontWarningsCompact warnings={frontWarnings} />
-
-                {/* Allergen declarations in export area */}
+                {/* Allergen declarations first */}
                 <AllergenDisplayCompact data={nutritionData} />
+
+                {/* Front warnings below allergens */}
+                <FrontWarningsCompact warnings={frontWarnings} />
               </div>
             </Card>
 
