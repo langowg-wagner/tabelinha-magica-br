@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { NutritionForm } from '@/components/NutritionForm';
 import { NutritionTable } from '@/components/NutritionTable';
+import { NutritionTableHorizontal } from '@/components/NutritionTableHorizontal';
 import { ExportButtons } from '@/components/ExportButtons';
 import { FrontWarningsDisplay } from '@/components/FrontWarnings';
 import { InfoSection } from '@/components/InfoSection';
@@ -9,9 +10,13 @@ import { NutritionData, DEFAULT_NUTRITION_DATA } from '@/types/nutrition';
 import { calculateFrontWarnings } from '@/utils/nutritionCalculations';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TableFormat, TABLE_FORMAT_LABELS } from '@/types/tableFormat';
 
 const Index = () => {
   const [nutritionData, setNutritionData] = useState<NutritionData>(DEFAULT_NUTRITION_DATA);
+  const [tableFormat, setTableFormat] = useState<TableFormat>('vertical');
   const tableRef = useRef<HTMLDivElement>(null);
   
   const frontWarnings = calculateFrontWarnings(nutritionData);
@@ -52,6 +57,23 @@ const Index = () => {
               </p>
             </div>
 
+            {/* Format selector */}
+            <div className="no-print flex items-center gap-3">
+              <Label htmlFor="table-format" className="text-sm font-medium whitespace-nowrap">
+                Formato da tabela:
+              </Label>
+              <Select value={tableFormat} onValueChange={(value: TableFormat) => setTableFormat(value)}>
+                <SelectTrigger id="table-format" className="w-40">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TABLE_FORMAT_LABELS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <Card className="p-6 bg-card">
               {nutritionData.productName && (
                 <h3 className="text-lg font-semibold mb-4 text-center">
@@ -59,8 +81,12 @@ const Index = () => {
                 </h3>
               )}
               
-              <div ref={tableRef} className="inline-block bg-card p-4">
-                <NutritionTable data={nutritionData} />
+              <div ref={tableRef} className="inline-block bg-white p-4">
+                {tableFormat === 'vertical' ? (
+                  <NutritionTable data={nutritionData} />
+                ) : (
+                  <NutritionTableHorizontal data={nutritionData} />
+                )}
               </div>
             </Card>
 
