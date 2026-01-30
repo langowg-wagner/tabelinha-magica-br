@@ -1,3 +1,39 @@
+// Allergen types per RDC 727/2022
+export const ALLERGENS = [
+  { id: 'wheat', label: 'Trigo' },
+  { id: 'rye', label: 'Centeio' },
+  { id: 'barley', label: 'Cevada' },
+  { id: 'oats', label: 'Aveia' },
+  { id: 'crustaceans', label: 'Crustáceos' },
+  { id: 'eggs', label: 'Ovos' },
+  { id: 'fish', label: 'Peixes' },
+  { id: 'peanuts', label: 'Amendoim' },
+  { id: 'soy', label: 'Soja' },
+  { id: 'milk', label: 'Leite' },
+  { id: 'almonds', label: 'Amêndoa' },
+  { id: 'hazelnuts', label: 'Avelãs' },
+  { id: 'cashews', label: 'Castanha-de-caju' },
+  { id: 'brazilNuts', label: 'Castanha-do-brasil' },
+  { id: 'macadamias', label: 'Macadâmias' },
+  { id: 'walnuts', label: 'Nozes' },
+  { id: 'pecans', label: 'Pecãs' },
+  { id: 'pistachios', label: 'Pistaches' },
+  { id: 'pineNuts', label: 'Pinoli' },
+  { id: 'chestnuts', label: 'Castanhas' },
+  { id: 'latex', label: 'Látex natural' },
+] as const;
+
+export type AllergenId = typeof ALLERGENS[number]['id'];
+
+export interface AllergenData {
+  contains: AllergenId[];        // "CONTÉM"
+  containsDerivatives: AllergenId[];  // "CONTÉM DERIVADOS DE"
+  mayContain: AllergenId[];      // "PODE CONTER" (cross-contamination)
+}
+
+export type GlutenStatus = 'contains' | 'free';
+export type LactoseStatus = 'contains' | 'none';
+
 export interface NutritionData {
   productName: string;
   portionsPerPackage: number;
@@ -26,6 +62,11 @@ export interface NutritionData {
   iron100g?: number;
   potassium100g?: number;
   zinc100g?: number;
+
+  // Allergens, gluten, lactose - RDC 727/2022
+  allergens: AllergenData;
+  glutenStatus: GlutenStatus;
+  lactoseStatus: LactoseStatus;
 }
 
 export interface NutritionTableRow {
@@ -100,4 +141,11 @@ export const DEFAULT_NUTRITION_DATA: NutritionData = {
   transFats100g: 0,
   dietaryFiber100g: 0,
   sodium100g: 0,
+  allergens: {
+    contains: [],
+    containsDerivatives: [],
+    mayContain: [],
+  },
+  glutenStatus: 'free',
+  lactoseStatus: 'none',
 };

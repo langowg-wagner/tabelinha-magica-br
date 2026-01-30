@@ -6,6 +6,8 @@ import { NutritionTableHorizontal } from '@/components/NutritionTableHorizontal'
 import { NutritionTableLinear } from '@/components/NutritionTableLinear';
 import { ExportButtons } from '@/components/ExportButtons';
 import { FrontWarningsDisplay } from '@/components/FrontWarnings';
+import { AllergenForm } from '@/components/AllergenForm';
+import { AllergenDisplay, AllergenDisplayCompact } from '@/components/AllergenDisplay';
 import { InfoSection } from '@/components/InfoSection';
 import { NutritionData, DEFAULT_NUTRITION_DATA } from '@/types/nutrition';
 import { calculateFrontWarnings } from '@/utils/nutritionCalculations';
@@ -42,6 +44,11 @@ const Index = () => {
             <NutritionForm 
               data={nutritionData} 
               onChange={setNutritionData} 
+            />
+
+            <AllergenForm
+              data={nutritionData}
+              onChange={setNutritionData}
             />
             
             <InfoSection />
@@ -82,7 +89,7 @@ const Index = () => {
                 </h3>
               )}
               
-              <div ref={tableRef} className="inline-block bg-white p-4">
+              <div ref={tableRef} className="inline-block bg-white p-4 space-y-4">
                 {tableFormat === 'vertical' && (
                   <NutritionTable data={nutritionData} />
                 )}
@@ -92,6 +99,9 @@ const Index = () => {
                 {tableFormat === 'linear' && (
                   <NutritionTableLinear data={nutritionData} />
                 )}
+
+                {/* Allergen declarations in export area */}
+                <AllergenDisplayCompact data={nutritionData} />
               </div>
             </Card>
 
@@ -100,6 +110,11 @@ const Index = () => {
             {/* Front Warnings */}
             <Card className="p-6 bg-card no-print">
               <FrontWarningsDisplay warnings={frontWarnings} />
+            </Card>
+
+            {/* Allergen Display Preview */}
+            <Card className="p-6 bg-card no-print">
+              <AllergenDisplay data={nutritionData} />
             </Card>
 
             <div className="no-print">
@@ -113,7 +128,7 @@ const Index = () => {
       <footer className="border-t border-border mt-16 no-print">
         <div className="container mx-auto px-4 py-6">
           <p className="text-sm text-muted-foreground text-center">
-            Tabela gerada conforme RDC 429/2020 e IN 75/2020 da ANVISA.
+            Tabela gerada conforme RDC 429/2020, IN 75/2020 e RDC 727/2022 da ANVISA.
             Valores diários de referência baseados em uma dieta de 2.000 kcal.
           </p>
         </div>
