@@ -27,28 +27,40 @@ export function ExportButtons({ tableRef }: ExportButtonsProps) {
     backgroundColor: '#ffffff',
     pixelRatio,
     cacheBust: true,
-    style: {
-      transform: 'scale(1)',
-      transformOrigin: 'top left',
+    skipFonts: true,
+    filter: (node: HTMLElement) => {
+      // Skip problematic elements
+      return !node.classList?.contains('no-export');
     },
   });
 
   const generateImage = async (): Promise<string | null> => {
     if (!tableRef.current) return null;
 
-    // Use scale directly as pixelRatio (1x = base, 2x = double, etc.)
     const options = getExportOptions(scale);
-
-    switch (format) {
-      case 'png':
-        return await toPng(tableRef.current, options);
-      case 'jpg':
-        return await toJpeg(tableRef.current, { ...options, quality: 0.95 });
-      case 'svg':
-        return await toSvg(tableRef.current, options);
-      default:
-        return null;
+    
+    // Try multiple times as html-to-image can be flaky
+    const maxAttempts = 3;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        switch (format) {
+          case 'png':
+            return await toPng(tableRef.current, options);
+          case 'jpg':
+            return await toJpeg(tableRef.current, { ...options, quality: 0.95 });
+          case 'svg':
+            return await toSvg(tableRef.current, options);
+          default:
+            return null;
+        }
+      } catch (error) {
+        console.warn(`Attempt ${attempt} failed:`, error);
+        if (attempt === maxAttempts) throw error;
+        // Wait a bit before retrying
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
+    return null;
   };
 
   const getMimeType = (): string => {
