@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Download, Printer, Copy } from 'lucide-react';
+import { Download, Copy } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,9 +19,6 @@ export function ExportButtons({ tableRef }: ExportButtonsProps) {
   const [scale, setScale] = useState(1); // 1x, 2x, 3x, 4x multiplier
   const [format, setFormat] = useState<ExportFormat>('png');
 
-  const handlePrint = () => {
-    window.print();
-  };
 
   const getExportOptions = (pixelRatio: number) => ({
     backgroundColor: '#ffffff',
@@ -224,10 +221,6 @@ export function ExportButtons({ tableRef }: ExportButtonsProps) {
         >
           <Copy className="h-4 w-4" />
           Copiar Imagem
-        </Button>
-        <Button onClick={handlePrint} variant="outline" className="gap-2">
-          <Printer className="h-4 w-4" />
-          Imprimir
         </Button>
       </div>
     </div>
