@@ -38,7 +38,13 @@ export function NutritionTable({ data, className }: NutritionTableProps) {
           key={index} 
           className="nutrition-table-row grid grid-cols-[1fr_70px_70px_60px]"
         >
-          <div className="nutrition-table-cell nutrition-table-cell-header whitespace-pre">
+          <div
+            className={cn(
+              'nutrition-table-cell nutrition-table-cell-header',
+              row.indentLevel === 1 && 'pl-4',
+              row.indentLevel === 2 && 'pl-6'
+            )}
+          >
             {row.label}
           </div>
           <div className="nutrition-table-cell nutrition-table-cell-value">{row.per100g}</div>

@@ -27,7 +27,7 @@ export function generateTableRows(data: NutritionData): NutritionTableRow[] {
     value100g: number,
     unit: string,
     dailyValue: number,
-    isIndented: boolean = false
+    indentLevel: number = 0
   ): NutritionTableRow => {
     const perPortion = calculatePerPortion(value100g, portionSize);
     const percentDV = calculatePercentDV(perPortion, dailyValue);
@@ -37,19 +37,19 @@ export function generateTableRows(data: NutritionData): NutritionTableRow[] {
       per100g: formatNumber(value100g),
       perPortion: formatNumber(perPortion),
       percentDV: formatPercentDV(percentDV),
-      isIndented,
+      indentLevel,
     };
   };
 
   const rows: NutritionTableRow[] = [
     createRow('Valor energético', data.energyKcal100g, 'kcal', DAILY_VALUES.energyKcal),
     createRow('Carboidratos', data.carbohydrates100g, 'g', DAILY_VALUES.carbohydrates),
-    createRow('  Açúcares totais', data.totalSugars100g, 'g', DAILY_VALUES.totalSugars, true),
-    createRow('    Açúcares adicionados', data.addedSugars100g, 'g', DAILY_VALUES.addedSugars, true),
+    createRow('Açúcares totais', data.totalSugars100g, 'g', DAILY_VALUES.totalSugars, 1),
+    createRow('Açúcares adicionados', data.addedSugars100g, 'g', DAILY_VALUES.addedSugars, 2),
     createRow('Proteínas', data.proteins100g, 'g', DAILY_VALUES.proteins),
     createRow('Gorduras totais', data.totalFats100g, 'g', DAILY_VALUES.totalFats),
-    createRow('  Gorduras saturadas', data.saturatedFats100g, 'g', DAILY_VALUES.saturatedFats, true),
-    createRow('  Gorduras trans', data.transFats100g, 'g', DAILY_VALUES.transFats, true),
+    createRow('Gorduras saturadas', data.saturatedFats100g, 'g', DAILY_VALUES.saturatedFats, 1),
+    createRow('Gorduras trans', data.transFats100g, 'g', DAILY_VALUES.transFats, 1),
     createRow('Fibras alimentares', data.dietaryFiber100g, 'g', DAILY_VALUES.dietaryFiber),
     createRow('Sódio', data.sodium100g, 'mg', DAILY_VALUES.sodium),
   ];
