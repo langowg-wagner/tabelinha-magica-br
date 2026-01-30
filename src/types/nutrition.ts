@@ -33,7 +33,11 @@ export interface NutritionTableRow {
   per100g: string;
   perPortion: string;
   percentDV: string;
-  isIndented?: boolean;
+  /**
+   * Visual indentation level for sub-items (e.g., sugars under carbohydrates).
+   * 0 = no indent
+   */
+  indentLevel?: number;
 }
 
 export interface FrontWarnings {
