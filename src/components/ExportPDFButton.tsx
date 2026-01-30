@@ -4,13 +4,27 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+
+// Size options in mm (width of the label)
+const SIZE_OPTIONS = {
+  'pequeno': { label: 'Pequeno (30mm)', width: 30 },
+  'medio': { label: 'Médio (50mm)', width: 50 },
+  'grande': { label: 'Grande (80mm)', width: 80 },
+  'muito-grande': { label: 'Muito Grande (120mm)', width: 120 },
+  'pagina-inteira': { label: 'Página Inteira', width: 170 },
+} as const;
+
+type SizeOption = keyof typeof SIZE_OPTIONS;
 
 interface ExportPDFButtonProps {
   tableRef: React.RefObject<HTMLDivElement>;
   productName?: string;
+  labelSize: SizeOption;
 }
 
-export function ExportPDFButton({ tableRef, productName }: ExportPDFButtonProps) {
+export function ExportPDFButton({ tableRef, productName, labelSize }: ExportPDFButtonProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,7 +44,7 @@ export function ExportPDFButton({ tableRef, productName }: ExportPDFButtonProps)
       // Capture the label as PNG image (same as the PNG export)
       const dataUrl = await toPng(tableRef.current, {
         backgroundColor: '#ffffff',
-        pixelRatio: 2,
+        pixelRatio: 3, // Higher quality for small prints
         cacheBust: true,
         skipFonts: true,
         filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
@@ -44,41 +58,47 @@ export function ExportPDFButton({ tableRef, productName }: ExportPDFButtonProps)
         img.src = dataUrl;
       });
 
-      // Create PDF with proper dimensions
+      // Get the target width in mm based on size option
+      const targetWidthMM = SIZE_OPTIONS[labelSize].width;
+      
+      // Calculate dimensions
       const imgWidth = img.width;
       const imgHeight = img.height;
-      
+      const aspectRatio = imgHeight / imgWidth;
+      const scaledHeight = targetWidthMM * aspectRatio;
+
       // A4 dimensions in mm: 210 x 297
       const pdfWidth = 210;
-      const maxImgWidth = pdfWidth - 40; // 20mm margins on each side
-      const scale = maxImgWidth / (imgWidth / 2); // Divide by pixelRatio
-      const scaledHeight = (imgHeight / 2) * scale;
+      const pdfHeight = 297;
 
       const doc = new jsPDF({
-        orientation: scaledHeight > 250 ? 'portrait' : 'portrait',
+        orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       });
 
+      // Center the image on the page
+      const xOffset = (pdfWidth - targetWidthMM) / 2;
+      
       // Add title if product name exists
       let yOffset = 20;
       if (productName) {
-        doc.setFontSize(14);
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.text(productName, pdfWidth / 2, yOffset, { align: 'center' });
-        yOffset += 10;
+        yOffset += 8;
       }
 
-      // Add the image
-      doc.addImage(dataUrl, 'PNG', 20, yOffset, maxImgWidth, scaledHeight);
+      // Add the image at the specified size
+      doc.addImage(dataUrl, 'PNG', xOffset, yOffset, targetWidthMM, scaledHeight);
 
-      // Add footer
-      const footerY = yOffset + scaledHeight + 10;
-      if (footerY < 280) {
-        doc.setFontSize(8);
+      // Add size info at bottom
+      const footerY = yOffset + scaledHeight + 8;
+      if (footerY < pdfHeight - 15) {
+        doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(128, 128, 128);
-        doc.text('Tabela gerada conforme RDC 429/2020, IN 75/2020 e RDC 727/2022 da ANVISA.', pdfWidth / 2, footerY, { align: 'center' });
+        doc.text(`Tamanho: ${SIZE_OPTIONS[labelSize].label} | RDC 429/2020, IN 75/2020, RDC 727/2022 ANVISA`, pdfWidth / 2, footerY, { align: 'center' });
       }
 
       // Save PDF
@@ -90,7 +110,7 @@ export function ExportPDFButton({ tableRef, productName }: ExportPDFButtonProps)
 
       toast({
         title: 'PDF gerado!',
-        description: 'O arquivo PDF foi baixado com sucesso.',
+        description: `Rótulo exportado no tamanho ${SIZE_OPTIONS[labelSize].label}.`,
       });
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
@@ -119,9 +139,10 @@ export function ExportPDFButton({ tableRef, productName }: ExportPDFButtonProps)
 
 interface PrintButtonProps {
   tableRef: React.RefObject<HTMLDivElement>;
+  labelSize: SizeOption;
 }
 
-export function PrintButton({ tableRef }: PrintButtonProps) {
+export function PrintButton({ tableRef, labelSize }: PrintButtonProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -141,13 +162,16 @@ export function PrintButton({ tableRef }: PrintButtonProps) {
       // Capture the label as PNG image
       const dataUrl = await toPng(tableRef.current, {
         backgroundColor: '#ffffff',
-        pixelRatio: 2,
+        pixelRatio: 3,
         cacheBust: true,
         skipFonts: true,
         filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
       });
 
-      // Open print window with the image
+      // Get the target width in mm based on size option
+      const targetWidthMM = SIZE_OPTIONS[labelSize].width;
+
+      // Open print window with the image at specific size
       const printWindow = window.open('', '_blank');
       if (!printWindow) {
         toast({
@@ -164,37 +188,50 @@ export function PrintButton({ tableRef }: PrintButtonProps) {
           <head>
             <title>Rótulo Nutricional</title>
             <style>
-              body {
+              @page {
+                size: A4;
+                margin: 10mm;
+              }
+              * {
                 margin: 0;
-                padding: 20px;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              body {
                 display: flex;
                 justify-content: center;
                 align-items: flex-start;
-                min-height: 100vh;
+                padding: 10mm;
                 background: white;
               }
+              .label-container {
+                width: ${targetWidthMM}mm;
+              }
               img {
-                max-width: 100%;
+                width: 100%;
                 height: auto;
+                display: block;
               }
               @media print {
                 body {
                   padding: 0;
                 }
-                img {
-                  max-width: 100%;
+                .label-container {
+                  width: ${targetWidthMM}mm;
                 }
               }
             </style>
           </head>
           <body>
-            <img src="${dataUrl}" alt="Rótulo Nutricional" />
+            <div class="label-container">
+              <img src="${dataUrl}" alt="Rótulo Nutricional" />
+            </div>
             <script>
               window.onload = function() {
                 setTimeout(function() {
                   window.print();
                   window.close();
-                }, 250);
+                }, 300);
               };
             </script>
           </body>
@@ -226,3 +263,31 @@ export function PrintButton({ tableRef }: PrintButtonProps) {
     </Button>
   );
 }
+
+// Size selector component
+interface LabelSizeSelectorProps {
+  value: SizeOption;
+  onChange: (value: SizeOption) => void;
+}
+
+export function LabelSizeSelector({ value, onChange }: LabelSizeSelectorProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <Label htmlFor="label-size" className="text-sm font-medium whitespace-nowrap">
+        Tamanho do rótulo:
+      </Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger id="label-size" className="w-48">
+          <SelectValue placeholder="Selecione o tamanho" />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(SIZE_OPTIONS).map(([key, { label }]) => (
+            <SelectItem key={key} value={key}>{label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+export type { SizeOption };
