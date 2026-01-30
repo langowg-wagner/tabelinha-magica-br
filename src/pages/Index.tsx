@@ -5,7 +5,7 @@ import { NutritionTable } from '@/components/NutritionTable';
 import { NutritionTableHorizontal } from '@/components/NutritionTableHorizontal';
 import { NutritionTableLinear } from '@/components/NutritionTableLinear';
 import { ExportButtons } from '@/components/ExportButtons';
-import { ExportPDFButton, PrintButton } from '@/components/ExportPDFButton';
+import { ExportPDFButton, PrintButton, LabelSizeSelector, SizeOption } from '@/components/ExportPDFButton';
 import { FrontWarningsDisplay } from '@/components/FrontWarnings';
 import { AllergenForm } from '@/components/AllergenForm';
 import { AllergenDisplay, AllergenDisplayCompact } from '@/components/AllergenDisplay';
@@ -21,6 +21,7 @@ import { TableFormat, TABLE_FORMAT_LABELS } from '@/types/tableFormat';
 const Index = () => {
   const [nutritionData, setNutritionData] = useState<NutritionData>(DEFAULT_NUTRITION_DATA);
   const [tableFormat, setTableFormat] = useState<TableFormat>('vertical');
+  const [labelSize, setLabelSize] = useState<SizeOption>('medio');
   const tableRef = useRef<HTMLDivElement>(null);
   
   const frontWarnings = calculateFrontWarnings(nutritionData);
@@ -120,9 +121,11 @@ const Index = () => {
 
             <div className="no-print space-y-4">
               <ExportButtons tableRef={tableRef} />
+              <Separator />
+              <LabelSizeSelector value={labelSize} onChange={setLabelSize} />
               <div className="flex gap-3">
-                <ExportPDFButton tableRef={tableRef} productName={nutritionData.productName} />
-                <PrintButton tableRef={tableRef} />
+                <ExportPDFButton tableRef={tableRef} productName={nutritionData.productName} labelSize={labelSize} />
+                <PrintButton tableRef={tableRef} labelSize={labelSize} />
               </div>
             </div>
           </div>
