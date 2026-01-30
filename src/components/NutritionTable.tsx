@@ -39,15 +39,7 @@ export function NutritionTable({ data, className }: NutritionTableProps) {
           className="nutrition-table-row grid grid-cols-[1fr_70px_70px_60px]"
         >
           <div className="nutrition-table-cell nutrition-table-cell-header">
-            <span
-              className={cn(
-                'block',
-                row.indentLevel === 1 && 'ml-3',
-                row.indentLevel === 2 && 'ml-5'
-              )}
-            >
-              {row.label}
-            </span>
+            {row.label}
           </div>
           <div className="nutrition-table-cell nutrition-table-cell-value">{row.per100g}</div>
           <div className="nutrition-table-cell nutrition-table-cell-value">{row.perPortion}</div>

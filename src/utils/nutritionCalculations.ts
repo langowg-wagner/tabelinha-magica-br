@@ -44,12 +44,13 @@ export function generateTableRows(data: NutritionData): NutritionTableRow[] {
   const rows: NutritionTableRow[] = [
     createRow('Valor energético', data.energyKcal100g, 'kcal', DAILY_VALUES.energyKcal),
     createRow('Carboidratos', data.carbohydrates100g, 'g', DAILY_VALUES.carbohydrates),
-    createRow('Açúcares totais', data.totalSugars100g, 'g', DAILY_VALUES.totalSugars, 1),
-    createRow('Açúcares adicionados', data.addedSugars100g, 'g', DAILY_VALUES.addedSugars, 2),
+    // No visual indentation (match ANVISA table examples used in this project)
+    createRow('Açúcares totais', data.totalSugars100g, 'g', DAILY_VALUES.totalSugars, 0),
+    createRow('Açúcares adicionados', data.addedSugars100g, 'g', DAILY_VALUES.addedSugars, 0),
     createRow('Proteínas', data.proteins100g, 'g', DAILY_VALUES.proteins),
     createRow('Gorduras totais', data.totalFats100g, 'g', DAILY_VALUES.totalFats),
-    createRow('Gorduras saturadas', data.saturatedFats100g, 'g', DAILY_VALUES.saturatedFats, 1),
-    createRow('Gorduras trans', data.transFats100g, 'g', DAILY_VALUES.transFats, 1),
+    createRow('Gorduras saturadas', data.saturatedFats100g, 'g', DAILY_VALUES.saturatedFats, 0),
+    createRow('Gorduras trans', data.transFats100g, 'g', DAILY_VALUES.transFats, 0),
     createRow('Fibras alimentares', data.dietaryFiber100g, 'g', DAILY_VALUES.dietaryFiber),
     createRow('Sódio', data.sodium100g, 'mg', DAILY_VALUES.sodium),
   ];
