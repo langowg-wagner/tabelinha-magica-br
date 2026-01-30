@@ -1,195 +1,89 @@
 import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+import { FileText, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
-import { NutritionData, ALLERGENS, AllergenId } from '@/types/nutrition';
-import { generateTableRows } from '@/utils/nutritionCalculations';
-import { calculateFrontWarnings } from '@/utils/nutritionCalculations';
+import { toPng } from 'html-to-image';
 
 interface ExportPDFButtonProps {
-  data: NutritionData;
+  tableRef: React.RefObject<HTMLDivElement>;
+  productName?: string;
 }
 
-function getAllergenLabel(id: AllergenId): string {
-  return ALLERGENS.find((a) => a.id === id)?.label || id;
-}
-
-export function ExportPDFButton({ data }: ExportPDFButtonProps) {
+export function ExportPDFButton({ tableRef, productName }: ExportPDFButtonProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleExportPDF = async () => {
+    if (!tableRef.current) {
+      toast({
+        title: 'Erro',
+        description: 'Rótulo não encontrado.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
+      // Capture the label as PNG image (same as the PNG export)
+      const dataUrl = await toPng(tableRef.current, {
+        backgroundColor: '#ffffff',
+        pixelRatio: 2,
+        cacheBust: true,
+        skipFonts: true,
+        filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
+      });
+
+      // Get image dimensions
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+
+      // Create PDF with proper dimensions
+      const imgWidth = img.width;
+      const imgHeight = img.height;
+      
+      // A4 dimensions in mm: 210 x 297
+      const pdfWidth = 210;
+      const maxImgWidth = pdfWidth - 40; // 20mm margins on each side
+      const scale = maxImgWidth / (imgWidth / 2); // Divide by pixelRatio
+      const scaledHeight = (imgHeight / 2) * scale;
+
       const doc = new jsPDF({
-        orientation: 'portrait',
+        orientation: scaledHeight > 250 ? 'portrait' : 'portrait',
         unit: 'mm',
         format: 'a4',
       });
 
-      const unit = data.isLiquid ? 'ml' : 'g';
-      const rows = generateTableRows(data);
-      const warnings = calculateFrontWarnings(data);
-      
-      let yPos = 20;
-      const leftMargin = 20;
-      const pageWidth = 170;
-
-      // Title
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      if (data.productName) {
-        doc.text(data.productName, leftMargin, yPos);
-        yPos += 10;
-      }
-
-      // === NUTRITION TABLE ===
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setFillColor(0, 0, 0);
-      doc.rect(leftMargin, yPos, pageWidth, 8, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.text('INFORMAÇÃO NUTRICIONAL', leftMargin + pageWidth / 2, yPos + 5.5, { align: 'center' });
-      doc.setTextColor(0, 0, 0);
-      yPos += 10;
-
-      // Portion info
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Porções por embalagem: ${data.portionsPerPackage || '000'} porções`, leftMargin, yPos);
-      yPos += 4;
-      doc.text(`Porção: ${data.portionSize || '000'} ${unit} ${data.portionDescription}`, leftMargin, yPos);
-      yPos += 6;
-
-      // Table header
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(leftMargin, yPos, leftMargin + pageWidth, yPos);
-      yPos += 1;
-
-      const col1 = leftMargin;
-      const col2 = leftMargin + 90;
-      const col3 = leftMargin + 115;
-      const col4 = leftMargin + 145;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.text('', col1, yPos + 4);
-      doc.text(`100 ${unit}`, col2, yPos + 4);
-      doc.text(`${data.portionSize || '000'} ${unit}`, col3, yPos + 4);
-      doc.text('%VD*', col4, yPos + 4);
-      yPos += 6;
-      doc.line(leftMargin, yPos, leftMargin + pageWidth, yPos);
-      yPos += 1;
-
-      // Table rows
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-
-      rows.forEach((row) => {
-        const indent = row.indentLevel ? row.indentLevel * 3 : 0;
-        doc.text(row.label, col1 + indent, yPos + 3.5);
-        doc.text(row.per100g, col2, yPos + 3.5);
-        doc.text(row.perPortion, col3, yPos + 3.5);
-        doc.text(row.percentDV, col4, yPos + 3.5);
-        yPos += 5;
-        doc.setLineWidth(0.1);
-        doc.line(leftMargin, yPos, leftMargin + pageWidth, yPos);
-      });
-
-      yPos += 2;
-      doc.setFontSize(7);
-      doc.text('*Percentual de valores diários fornecidos pela porção.', leftMargin, yPos);
-      yPos += 10;
-
-      // === FRONT WARNINGS ===
-      const activeWarnings: string[] = [];
-      if (warnings.highAddedSugar) activeWarnings.push('AÇÚCAR ADICIONADO');
-      if (warnings.highSaturatedFat) activeWarnings.push('GORDURA SATURADA');
-      if (warnings.highSodium) activeWarnings.push('SÓDIO');
-
-      if (activeWarnings.length > 0) {
-        doc.setFontSize(10);
+      // Add title if product name exists
+      let yOffset = 20;
+      if (productName) {
+        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('ROTULAGEM NUTRICIONAL FRONTAL', leftMargin, yPos);
-        yPos += 6;
-
-        doc.setFillColor(0, 0, 0);
-        doc.roundedRect(leftMargin, yPos, 25, 12, 1, 1, 'F');
-        
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(6);
-        doc.text('ALTO', leftMargin + 12.5, yPos + 5, { align: 'center' });
-        doc.text('EM', leftMargin + 12.5, yPos + 9, { align: 'center' });
-        doc.setTextColor(0, 0, 0);
-
-        let xOffset = leftMargin + 27;
-        activeWarnings.forEach((warning) => {
-          const textWidth = doc.getTextWidth(warning) + 6;
-          doc.roundedRect(xOffset, yPos, textWidth, 12, 1, 1, 'F');
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(7);
-          doc.text(warning, xOffset + textWidth / 2, yPos + 7, { align: 'center' });
-          doc.setTextColor(0, 0, 0);
-          xOffset += textWidth + 2;
-        });
-
-        yPos += 18;
+        doc.text(productName, pdfWidth / 2, yOffset, { align: 'center' });
+        yOffset += 10;
       }
 
-      // === ALLERGEN DECLARATIONS ===
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('DECLARAÇÕES OBRIGATÓRIAS', leftMargin, yPos);
-      yPos += 6;
+      // Add the image
+      doc.addImage(dataUrl, 'PNG', 20, yOffset, maxImgWidth, scaledHeight);
 
-      doc.setFontSize(9);
-
-      // Allergens
-      const allergenParts: string[] = [];
-      if (data.allergens.contains.length > 0) {
-        const names = data.allergens.contains.map(getAllergenLabel).join(', ');
-        allergenParts.push(`CONTÉM ${names.toUpperCase()}`);
+      // Add footer
+      const footerY = yOffset + scaledHeight + 10;
+      if (footerY < 280) {
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(128, 128, 128);
+        doc.text('Tabela gerada conforme RDC 429/2020, IN 75/2020 e RDC 727/2022 da ANVISA.', pdfWidth / 2, footerY, { align: 'center' });
       }
-      if (data.allergens.containsDerivatives.length > 0) {
-        const names = data.allergens.containsDerivatives.map(getAllergenLabel).join(', ');
-        allergenParts.push(`DERIVADOS DE ${names.toUpperCase()}`);
-      }
-      if (data.allergens.mayContain.length > 0) {
-        const names = data.allergens.mayContain.map(getAllergenLabel).join(', ');
-        allergenParts.push(`PODE CONTER ${names.toUpperCase()}`);
-      }
-
-      if (allergenParts.length > 0) {
-        const allergenText = `ALÉRGICOS: ${allergenParts.join(' E ')}.`;
-        const lines = doc.splitTextToSize(allergenText, pageWidth);
-        doc.text(lines, leftMargin, yPos);
-        yPos += lines.length * 4 + 2;
-      }
-
-      // Lactose
-      if (data.lactoseStatus === 'contains') {
-        doc.text('CONTÉM LACTOSE', leftMargin, yPos);
-        yPos += 5;
-      }
-
-      // Gluten
-      const glutenText = data.glutenStatus === 'contains' ? 'CONTÉM GLÚTEN' : 'NÃO CONTÉM GLÚTEN';
-      doc.text(glutenText, leftMargin, yPos);
-      yPos += 10;
-
-      // Footer
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Tabela gerada conforme RDC 429/2020, IN 75/2020 e RDC 727/2022 da ANVISA.', leftMargin, yPos);
-      yPos += 3;
-      doc.text('Valores diários de referência baseados em uma dieta de 2.000 kcal.', leftMargin, yPos);
 
       // Save PDF
-      const fileName = data.productName 
-        ? `rotulo-${data.productName.toLowerCase().replace(/\s+/g, '-')}.pdf`
+      const fileName = productName 
+        ? `rotulo-${productName.toLowerCase().replace(/\s+/g, '-')}.pdf`
         : 'rotulo-nutricional.pdf';
       
       doc.save(fileName);
@@ -219,6 +113,116 @@ export function ExportPDFButton({ data }: ExportPDFButtonProps) {
     >
       <FileText className="h-4 w-4" />
       {isLoading ? 'Gerando...' : 'Baixar PDF'}
+    </Button>
+  );
+}
+
+interface PrintButtonProps {
+  tableRef: React.RefObject<HTMLDivElement>;
+}
+
+export function PrintButton({ tableRef }: PrintButtonProps) {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handlePrint = async () => {
+    if (!tableRef.current) {
+      toast({
+        title: 'Erro',
+        description: 'Rótulo não encontrado.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Capture the label as PNG image
+      const dataUrl = await toPng(tableRef.current, {
+        backgroundColor: '#ffffff',
+        pixelRatio: 2,
+        cacheBust: true,
+        skipFonts: true,
+        filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
+      });
+
+      // Open print window with the image
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível abrir a janela de impressão. Verifique se pop-ups estão habilitados.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Rótulo Nutricional</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                min-height: 100vh;
+                background: white;
+              }
+              img {
+                max-width: 100%;
+                height: auto;
+              }
+              @media print {
+                body {
+                  padding: 0;
+                }
+                img {
+                  max-width: 100%;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${dataUrl}" alt="Rótulo Nutricional" />
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                  window.close();
+                }, 250);
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+
+    } catch (error) {
+      console.error('Erro ao preparar impressão:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível preparar a impressão. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Button 
+      onClick={handlePrint} 
+      disabled={isLoading} 
+      variant="outline" 
+      className="gap-2"
+    >
+      <Printer className="h-4 w-4" />
+      {isLoading ? 'Preparando...' : 'Imprimir'}
     </Button>
   );
 }
