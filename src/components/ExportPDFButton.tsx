@@ -22,15 +22,8 @@ const getHighQualityOptions = (pixelRatio: number) => ({
   backgroundColor: '#ffffff',
   pixelRatio,
   cacheBust: true,
-  skipFonts: false, // Include fonts for better text rendering
+  skipFonts: false,
   quality: 1,
-  style: {
-    // Ensure crisp text rendering
-    fontSmooth: 'always',
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
-    textRendering: 'optimizeLegibility',
-  },
   filter: (node: HTMLElement) => !node.classList?.contains('no-export'),
 });
 
