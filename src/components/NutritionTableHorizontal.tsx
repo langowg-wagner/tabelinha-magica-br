@@ -44,11 +44,9 @@ export function NutritionTableHorizontal({ data, className }: NutritionTableHori
               key={index} 
               className="grid grid-cols-[1fr_60px_60px_50px] border-b border-table-border"
             >
-              <div className={cn(
-                "px-2 py-1 text-xs border-r border-table-border",
-                row.indentLevel === 1 && "pl-4",
-                row.indentLevel === 2 && "pl-6"
-              )}>
+              <div className="px-2 py-1 text-xs border-r border-table-border">
+                {row.indentLevel === 1 && <span className="inline-block w-2"></span>}
+                {row.indentLevel === 2 && <span className="inline-block w-4"></span>}
                 {row.label}
               </div>
               <div className="px-2 py-1 text-xs text-center border-r border-table-border">{row.per100g}</div>
